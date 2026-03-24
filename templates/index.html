@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4>Email ve URL Çıkarıcı</h4>
+            </div>
+            <div class="card-body">
+                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#url">URL'den Çek</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#file">Dosya Yükle</button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content mt-3">
+                    <div class="tab-pane fade show active" id="url">
+                        <form action="/extract" method="post">
+                            <div class="mb-3">
+                                <label>Web Sitesi URL'si:</label>
+                                <input type="url" class="form-control" name="url_input" required>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="deep_scan">
+                                    <label>Derin tarama (alt sayfaları da tara)</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="save_html">
+                                    <label>HTML kaynağını kaydet</label>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Tarama Başlat</button>
+                        </form>
+                    </div>
+                    
+                    <div class="tab-pane fade" id="file">
+                        <form action="/extract" method="post" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label class="fw-bold">Dosyaları Seç (Birden çok seçilebilir):</label>
+                                <div class="file-upload p-4 text-center border rounded mt-2">
+                                    <i class="bi bi-cloud-upload fs-1 d-block"></i>
+                                    <p class="mb-2">Dosyaları sürükleyip bırakın veya tıklayın</p>
+                                    <input type="file" class="d-none" id="file-input" name="files" accept=".txt,.html,.htm,.csv,.json" multiple required>
+                                    <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('file-input').click()">Dosya Seç</button>
+                                </div>
+                                <small class="text-muted d-block mt-2">Desteklenen formatlar: TXT, HTML, CSV, JSON</small>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Dosyaları İşle</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('file-input').addEventListener('change', function(e) {
+    const fileCount = this.files.length;
+    if (fileCount > 0) {
+        const btn = document.querySelector('.file-upload button');
+        btn.innerHTML = `<i class="bi bi-check-circle"></i> ${fileCount} dosya seçildi`;
+        btn.classList.remove('btn-outline-primary');
+        btn.classList.add('btn-success');
+    }
+});
+</script>
+{% endblock %}

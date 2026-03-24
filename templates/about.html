@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4>Hakkında</h4>
+            </div>
+            <div class="card-body">
+                <h5>Email & URL Scraper</h5>
+                <p>7 farklı script tek çatı altında:</p>
+                <ul>
+                    <li>baslik.py - Google arama</li>
+                    <li>eposya.py - Email çıkarma</li>
+                    <li>logo_scraper.py - Web scraping</li>
+                    <li>mikro.py - HTML parsing</li>
+                    <li>url.py / url2.py - URL çıkarma</li>
+                </ul>
+                <hr>
+                <h6>URL'den Email Kuralları:</h6>
+                <ol>
+                    <li>https://www. → info@domain</li>
+                    <li>http://www. → info@domain</li>
+                    <li>https:// → info@domain</li>
+                    <li>http:// → info@domain</li>
+                    <li>www. → info@domain</li>
+                </ol>
+                <hr>
+                <h6>Yeni Özellik - Sayfalı Tarama:</h6>
+                <p>OSTİM gibi sayfalı yapıdaki siteleri tarayabilirsiniz.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

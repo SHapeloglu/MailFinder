@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row">
+    <div class="col-md-10 mx-auto">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4><i class="bi bi-file-earmark-spreadsheet"></i> Çoklu Excel Email Birleştirici</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i>
+                    <strong>Nasıl Çalışır:</strong> Birden çok Excel/CSV dosyası yükleyin, tüm email'leri bulup tekilleştirelim.
+                    <ul>
+                        <li>📊 Excel/CSV dosyaları taranır</li>
+                        <li>📧 Email'ler otomatik bulunur</li>
+                        <li>🔄 Aynı email'ler tekilleştirilir</li>
+                        <li>📥 Sonuçları TXT, CSV, Excel, JSON olarak indirin</li>
+                    </ul>
+                </div>
+
+                <form method="post" action="/merge-excel-emails" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label class="fw-bold">Excel/CSV Dosyalarını Seç (Çoklu seçim için Ctrl basılı tutun):</label>
+                        <div class="file-upload p-4 text-center border rounded mt-2">
+                            <i class="bi bi-cloud-upload fs-1 d-block"></i>
+                            <p class="mb-2">Dosyaları sürükleyip bırakın veya tıklayın</p>
+                            <input type="file" class="d-none" id="file-input" name="files" accept=".xlsx,.xls,.csv" multiple required>
+                            <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('file-input').click()">Dosya Seç</button>
+                        </div>
+                        <small class="text-muted d-block mt-2">Desteklenen formatlar: XLSX, XLS, CSV</small>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="include_domains">
+                            <label>Domain bazlı gruplama yap</label>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-diagram-3"></i> Birleştir</button> 
+                    <a href="/" class="btn btn-secondary">Ana Sayfa</a>
+                </form>
+            </div>
+        </div>
+
+        {% if results %}
+        <div class="card mt-4" id="sonuclar">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-check-circle"></i> Sonuçlar</h5>
+                <span class="badge bg-light text-dark"><i class="bi bi-files"></i> {{ results.file_count }} dosya</span>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-success mb-4">
+                    <i class="bi bi-files"></i> <strong>İşlenen Dosyalar:</strong>
+                    <ul>
+                        {% for file in results.files %}
+                        <li>{{ file }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h6>📊 Toplam Hücre</h6>
+                                <h3>{{ results.total_cells }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h6>📧 Benzersiz Email</h6>
+                                <h3>{{ results.unique_emails|length }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h6>🔤 Domain Sayısı</h6>
+                                <h3>{{ results.domains|length }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% if results.domain_stats %}
+                <div class="mb-4">
+                    <h6>Domain Dağılımı:</h6>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Domain</th>
+                                <th>Sayı</th>
+                                <th>Yüzde</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for domain, count in results.domain_stats.items() %}
+                            <tr>
+                                <td>@{{ domain }}</td>
+                                <td>{{ count }}</td>
+                                <td>
+                                    <div class="progress">
+                                        <div class="progress-bar" style="width: {{ (count/results.unique_emails|length*100)|round }}%">
+                                            {{ (count/results.unique_emails|length*100)|round }}%
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+
+                <div class="mb-3">
+                    <h6>📧 Email Listesi ({{ results.unique_emails|length }}):</h6>
+                    <div class="bg-light p-3 rounded" style="max-height:300px;overflow-y:auto;">
+                        {% for email in results.unique_emails %}
+                            <code class="d-block">{{ email }}</code>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <div class="btn-group">
+                        <form action="/download-converted" method="POST" style="display: inline;">
+                            <input type="hidden" name="type" value="txt">
+                            <input type="hidden" name="result_key" value="{{ results.result_key }}">
+                            <button type="submit" class="btn btn-outline-primary">
+                                <i class="bi bi-file-text"></i> TXT İndir
+                            </button>
+                        </form>
+                        <form action="/download-converted" method="POST" style="display: inline;">
+                            <input type="hidden" name="type" value="csv">
+                            <input type="hidden" name="result_key" value="{{ results.result_key }}">
+                            <button type="submit" class="btn btn-outline-success">
+                                <i class="bi bi-file-spreadsheet"></i> CSV İndir
+                            </button>
+                        </form>
+                        <form action="/download-converted" method="POST" style="display: inline;">
+                            <input type="hidden" name="type" value="excel">
+                            <input type="hidden" name="result_key" value="{{ results.result_key }}">
+                            <button type="submit" class="btn btn-outline-danger">
+                                <i class="bi bi-file-earmark-excel"></i> Excel İndir
+                            </button>
+                        </form>
+                        <form action="/download-converted" method="POST" style="display: inline;">
+                            <input type="hidden" name="type" value="json">
+                            <input type="hidden" name="result_key" value="{{ results.result_key }}">
+                            <button type="submit" class="btn btn-outline-warning">
+                                <i class="bi bi-file-code"></i> JSON İndir
+                            </button>
+                        </form>
+                    </div>
+                    <button onclick="copyEmails({{ results.unique_emails|tojson }})" class="btn btn-outline-secondary mt-2">
+                        <i class="bi bi-clipboard"></i> Listeyi Kopyala
+                    </button>
+                </div>
+            </div>
+            <div class="card-footer text-center bg-light">
+                <button onclick="scrollToTop()" class="btn btn-primary btn-rounded"><i class="bi bi-arrow-up-circle-fill"></i> Sayfa Başına</button>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+document.getElementById('file-input').addEventListener('change', function(e) {
+    const fileCount = this.files.length;
+    if (fileCount > 0) {
+        const btn = document.querySelector('.file-upload button');
+        btn.innerHTML = `<i class="bi bi-check-circle"></i> ${fileCount} dosya seçildi`;
+        btn.classList.remove('btn-outline-primary');
+        btn.classList.add('btn-success');
+    }
+});
+
+function copyEmails(emails) {
+    const text = emails.join('\n');
+    navigator.clipboard.writeText(text).then(() => {
+        alert(`${emails.length} email panoya kopyalandı!`);
+    });
+}
+</script>
+{% endblock %}

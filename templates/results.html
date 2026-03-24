@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4>Sonuçlar - {{ results.timestamp }}</h4>
+            </div>
+            <div class="card-body">
+                {% if error %}
+                    <div class="alert alert-danger">{{ error }}</div>
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-files"></i> 
+                        <strong>İşlenen:</strong> 
+                        {% if results.source == 'url' %}
+                            {{ results.files[0] }}
+                        {% else %}
+                            {{ results.files|length }} dosya
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h5>📧 Email</h5>
+                                    <h2>{{ results.emails|length }}</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h5>🔗 URL</h5>
+                                    <h2>{{ results.urls|length }}</h2>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if results.emails %}
+                    <h5>Email Adresleri ({{ results.emails|length }}):</h5>
+                    <div class="mb-3" style="max-height: 300px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 5px; padding: 10px;">
+                        {% for email in results.emails[:50] %}
+                            <span class="badge bg-primary mb-1">{{ email }}</span>
+                        {% endfor %}
+                        {% if results.emails|length > 50 %}
+                            <div class="text-muted mt-2">... ve {{ results.emails|length - 50 }} email daha</div>
+                        {% endif %}
+                    </div>
+                    
+                    <form action="/download" method="POST" style="display: inline;">
+                        <input type="hidden" name="type" value="emails">
+                        <input type="hidden" name="result_key" value="{{ results.result_key }}">
+                        <button type="submit" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-file-text"></i> Email İndir (TXT)
+                        </button>
+                    </form>
+                    
+                    <button onclick="copyEmails({{ results.emails|tojson }})" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-clipboard"></i> Email Kopyala
+                    </button>
+                    {% endif %}
+                    
+                    {% if results.urls %}
+                    <h5 class="mt-3">URL'ler ({{ results.urls|length }}):</h5>
+                    <div class="mb-3" style="max-height: 300px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 5px; padding: 10px;">
+                        {% for url in results.urls[:20] %}
+                            <div><a href="{{ url }}" target="_blank">{{ url }}</a></div>
+                        {% endfor %}
+                        {% if results.urls|length > 20 %}
+                            <div class="text-muted mt-2">... ve {{ results.urls|length - 20 }} URL daha</div>
+                        {% endif %}
+                    </div>
+                    
+                    <form action="/download" method="POST" style="display: inline;">
+                        <input type="hidden" name="type" value="urls">
+                        <input type="hidden" name="result_key" value="{{ results.result_key }}">
+                        <button type="submit" class="btn btn-sm btn-outline-success">
+                            <i class="bi bi-file-text"></i> URL İndir (TXT)
+                        </button>
+                    </form>
+                    
+                    <button onclick="copyUrls({{ results.urls|tojson }})" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-clipboard"></i> URL Kopyala
+                    </button>
+                    {% endif %}
+                    
+                    {% if results.emails and results.urls %}
+                    <div class="mt-3">
+                        <form action="/download" method="POST" style="display: inline;">
+                            <input type="hidden" name="type" value="csv">
+                            <input type="hidden" name="result_key" value="{{ results.result_key }}">
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-file-spreadsheet"></i> CSV İndir
+                            </button>
+                        </form>
+                        
+                        <form action="/download" method="POST" style="display: inline;">
+                            <input type="hidden" name="type" value="json">
+                            <input type="hidden" name="result_key" value="{{ results.result_key }}">
+                            <button type="submit" class="btn btn-warning">
+                                <i class="bi bi-file-code"></i> JSON İndir
+                            </button>
+                        </form>
+                        
+                        <button onclick="copyAll({{ results.emails|tojson }}, {{ results.urls|tojson }})" class="btn btn-outline-info">
+                            <i class="bi bi-clipboard"></i> Tümünü Kopyala
+                        </button>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mt-4">
+                        <a href="/" class="btn btn-primary">
+                            <i class="bi bi-arrow-left"></i> Yeni Dosya Yükle
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyEmails(emails) {
+    const text = emails.join('\n');
+    navigator.clipboard.writeText(text).then(() => {
+        alert(`${emails.length} email panoya kopyalandı!`);
+    });
+}
+
+function copyUrls(urls) {
+    const text = urls.join('\n');
+    navigator.clipboard.writeText(text).then(() => {
+        alert(`${urls.length} URL panoya kopyalandı!`);
+    });
+}
+
+function copyAll(emails, urls) {
+    let text = "=== EMAIL ADRESLERİ ===\n";
+    text += emails.join('\n');
+    text += "\n\n=== URL'LER ===\n";
+    text += urls.join('\n');
+    navigator.clipboard.writeText(text).then(() => {
+        alert('Tüm veriler panoya kopyalandı!');
+    });
+}
+</script>
+{% endblock %}
