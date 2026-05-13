@@ -1,0 +1,653 @@
+{% extends "base.html" %}
+
+{% block title %}Kullanım Kılavuzu – Email & URL Scraper{% endblock %}
+
+{% block content %}
+
+{# Sayfaya özgü stiller – base.html'deki Bootstrap'i ezmez, üstüne ekler #}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
+
+  :root {
+    --ink:     #0f1117;
+    --accent:  #2563eb;
+    --accent2: #0ea5e9;
+    --gold:    #f59e0b;
+    --green:   #10b981;
+    --red:     #ef4444;
+    --muted:   #6b7280;
+    --border:  #e5e7eb;
+    --card-bg: #ffffff;
+    --code-bg: #1e293b;
+    --code-fg: #7dd3fc;
+    --radius:  12px;
+  }
+
+  /* ── Hero ── */
+  .u-hero {
+    background: var(--ink);
+    color: #fff;
+    padding: 64px 40px 48px;
+    position: relative;
+    overflow: hidden;
+    margin: -1.5rem -12px 0;   /* Bootstrap container kenarlarına taş */
+  }
+  .u-hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 70% 50%, rgba(37,99,235,0.35) 0%, transparent 60%),
+                radial-gradient(ellipse at 20% 80%, rgba(14,165,233,0.2)  0%, transparent 50%);
+    pointer-events: none;
+  }
+  .u-hero-inner { max-width: 860px; margin: 0 auto; position: relative; z-index: 1; }
+  .u-hero-tag {
+    display: inline-block;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.68rem; font-weight: 700; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--accent2);
+    border: 1px solid rgba(14,165,233,0.4);
+    padding: 4px 12px; border-radius: 999px; margin-bottom: 18px;
+  }
+  .u-hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 800; line-height: 1.1; margin-bottom: 14px;
+  }
+  .u-hero h1 span { color: var(--accent2); }
+  .u-hero p { font-size: 1rem; color: rgba(255,255,255,0.7); max-width: 520px; margin: 0; }
+
+  /* ── İçindekiler çubuğu ── */
+  .u-toc {
+    position: sticky; top: 56px;   /* base.html navbar yüksekliği ~56px */
+    z-index: 90;
+    background: rgba(15,17,23,0.97);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    margin: 0 -12px;
+  }
+  .u-toc-inner {
+    max-width: 860px; margin: 0 auto;
+    display: flex; gap: 2px;
+    overflow-x: auto; scrollbar-width: none; padding: 0 12px;
+  }
+  .u-toc-inner::-webkit-scrollbar { display: none; }
+  .u-toc a {
+    display: block;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.75rem; font-weight: 600;
+    color: rgba(255,255,255,0.45);
+    padding: 13px 12px;
+    white-space: nowrap;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .u-toc a:hover { color: #fff; border-color: var(--accent2); }
+
+  /* ── Ana içerik alanı ── */
+  .u-main { max-width: 860px; margin: 0 auto; padding: 52px 0 40px; }
+
+  /* ── Bölümler ── */
+  .u-section { margin-bottom: 68px; }
+  .u-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.66rem; font-weight: 700; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 6px;
+  }
+  .u-main h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.3rem, 2.5vw, 1.8rem);
+    font-weight: 800; margin-bottom: 18px; color: var(--ink);
+  }
+  .u-main h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem; font-weight: 700;
+    margin-bottom: 8px; color: var(--ink);
+  }
+  .u-main p { margin-bottom: 12px; color: #374151; }
+
+  /* ── Kart ── */
+  .u-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px 28px; margin-bottom: 14px;
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+  .u-card:hover { box-shadow: 0 8px 28px rgba(0,0,0,0.07); transform: translateY(-2px); }
+  .u-card-blue   { border-left: 3px solid var(--accent); }
+  .u-card-green  { border-left: 3px solid var(--green);  }
+  .u-card-gold   { border-left: 3px solid var(--gold);   }
+  .u-card-red    { border-left: 3px solid var(--red);    }
+
+  /* ── Özellik kartları grid ── */
+  .u-feat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 14px;
+  }
+  .u-feat-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px;
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+  .u-feat-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.07); transform: translateY(-2px); }
+  .u-feat-icon { font-size: 1.7rem; margin-bottom: 10px; display: block; }
+  .u-feat-card h3 { font-size: 0.92rem; margin-bottom: 5px; }
+  .u-feat-card p  { font-size: 0.83rem; color: var(--muted); margin: 0; }
+
+  /* ── Adım listesi ── */
+  .u-steps { list-style: none; padding: 0; margin: 0; }
+  .u-steps li {
+    display: flex; gap: 18px;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .u-steps li:last-child { border-bottom: none; }
+  .u-step-num {
+    flex-shrink: 0;
+    width: 34px; height: 34px;
+    background: var(--accent); color: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.83rem;
+    margin-top: 2px;
+  }
+  .u-step-body h3 { margin-bottom: 5px; }
+  .u-step-body p  { margin-bottom: 0; font-size: 0.9rem; }
+
+  /* ── Kod bloğu ── */
+  .u-code {
+    background: var(--code-bg);
+    border-radius: var(--radius);
+    padding: 18px 22px; margin: 12px 0;
+    overflow-x: auto; position: relative;
+  }
+  .u-code code {
+    font-family: 'Fira Code', 'Cascadia Code', 'Courier New', monospace;
+    font-size: 0.83rem; color: var(--code-fg);
+    line-height: 1.8; white-space: pre; display: block;
+  }
+  .u-code-lbl {
+    position: absolute; top: 9px; right: 12px;
+    font-size: 0.63rem; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: rgba(255,255,255,0.28);
+  }
+
+  /* ── Uyarı/Bilgi kutuları ── */
+  .u-tip, .u-warn, .u-info {
+    border-radius: var(--radius); padding: 14px 18px; margin: 14px 0;
+    display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem;
+  }
+  .u-tip  { background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; }
+  .u-warn { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+  .u-info { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+  .u-tip-icon { font-size: 1.05rem; flex-shrink: 0; margin-top: 2px; }
+
+  /* ── Tablo ── */
+  .u-table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 0.88rem; }
+  .u-table th {
+    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.76rem;
+    letter-spacing: 0.05em; text-transform: uppercase;
+    background: #f3f4f6; padding: 9px 14px; text-align: left;
+    border-bottom: 2px solid var(--border);
+  }
+  .u-table td { padding: 9px 14px; border-bottom: 1px solid var(--border); color: #374151; }
+  .u-table tr:last-child td { border-bottom: none; }
+  .u-table tr:hover td { background: #f9fafb; }
+
+  /* ── Rozet ── */
+  .u-badge {
+    display: inline-block; font-size: 0.7rem; font-weight: 600;
+    padding: 2px 8px; border-radius: 999px;
+    font-family: 'Syne', sans-serif;
+  }
+  .u-badge-blue  { background: #dbeafe; color: #1d4ed8; }
+  .u-badge-green { background: #d1fae5; color: #065f46; }
+  .u-badge-gold  { background: #fef3c7; color: #92400e; }
+  .u-badge-red   { background: #fee2e2; color: #991b1b; }
+
+  /* ── SSS (details/summary) ── */
+  .u-faq { border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 8px; overflow: hidden; }
+  .u-faq summary {
+    font-family: 'Syne', sans-serif; font-weight: 600; font-size: 0.92rem;
+    padding: 14px 18px; cursor: pointer; list-style: none;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .u-faq summary::after { content: '＋'; font-size: 1rem; color: var(--muted); }
+  .u-faq[open] summary::after { content: '－'; }
+  .u-faq[open] summary { border-bottom: 1px solid var(--border); }
+  .u-faq-body { padding: 14px 18px; font-size: 0.9rem; color: #374151; }
+
+  /* ── Responsive ── */
+  @media (max-width: 600px) {
+    .u-hero { padding: 44px 20px 36px; margin: -1.5rem -12px 0; }
+    .u-main { padding: 36px 0 28px; }
+    .u-toc  { margin: 0 -12px; }
+  }
+</style>
+
+{# ══ HERO ══════════════════════════════════════════════════════ #}
+<div class="u-hero">
+  <div class="u-hero-inner">
+    <div class="u-hero-tag">📘 Kullanım Kılavuzu v2.1</div>
+    <h1>Email &amp; URL<br><span>Scraper</span></h1>
+    <p>Web sitelerinden ve dosyalardan e-posta ile URL toplayan, dönüştüren ve dışa aktaran araç — adım adım kullanım rehberi.</p>
+  </div>
+</div>
+
+{# ══ İÇİNDEKİLER ÇUBUĞU ═══════════════════════════════════════ #}
+<nav class="u-toc" aria-label="Sayfa içi navigasyon">
+  <div class="u-toc-inner">
+    <a href="#kurulum">Kurulum</a>
+    <a href="#url-tarama">URL Tarama</a>
+    <a href="#dosya-yukleme">Dosya Yükleme</a>
+    <a href="#sayfali-tarama">Sayfalı Tarama</a>
+    <a href="#url-email">URL→Email</a>
+    <a href="#email-url">Email→URL</a>
+    <a href="#excel">Excel Birleştir</a>
+    <a href="#indirme">İndirme</a>
+    <a href="#guvenlik">Güvenlik</a>
+    <a href="#sss">SSS</a>
+  </div>
+</nav>
+
+<div class="u-main">
+
+  {# ══ GENEL BAKIŞ ════════════════════════════════════════════ #}
+  <div class="u-section">
+    <div class="u-label">Genel Bakış</div>
+    <h2>Bu araç ne işe yarar?</h2>
+    <div class="u-feat-grid">
+      <div class="u-feat-card">
+        <span class="u-feat-icon">🔍</span>
+        <h3>Web Scraping</h3>
+        <p>Herhangi bir web sitesini URL'si ile tara; e-posta ve URL'leri saniyeler içinde topla.</p>
+      </div>
+      <div class="u-feat-card">
+        <span class="u-feat-icon">📄</span>
+        <h3>Dosya Analizi</h3>
+        <p>TXT, HTML, CSV, JSON dosyalarını yükle; içindeki e-posta ve URL'leri çıkar.</p>
+      </div>
+      <div class="u-feat-card">
+        <span class="u-feat-icon">📑</span>
+        <h3>Sayfalı Tarama</h3>
+        <p>OSTİM gibi sayfalı yapıdaki siteleri 1. sayfadan N. sayfaya otomatik tara.</p>
+      </div>
+      <div class="u-feat-card">
+        <span class="u-feat-icon">🔄</span>
+        <h3>Dönüştürme</h3>
+        <p>URL'leri e-postaya, e-postaları URL'ye çevir. Toplu Excel birleştirme yap.</p>
+      </div>
+      <div class="u-feat-card">
+        <span class="u-feat-icon">📥</span>
+        <h3>Dışa Aktarma</h3>
+        <p>Sonuçları TXT, CSV, Excel veya JSON olarak tek tıkla indir.</p>
+      </div>
+      <div class="u-feat-card">
+        <span class="u-feat-icon">🔒</span>
+        <h3>Güvenli</h3>
+        <p>Yüklenen dosyalar işlem sonrası otomatik silinir. Gizli anahtar .env'de tutulur.</p>
+      </div>
+    </div>
+  </div>
+
+  {# ══ KURULUM ════════════════════════════════════════════════ #}
+  <div class="u-section" id="kurulum">
+    <div class="u-label">Başlangıç</div>
+    <h2>Kurulum</h2>
+    <ol class="u-steps">
+      <li>
+        <div class="u-step-num">1</div>
+        <div class="u-step-body">
+          <h3>Projeyi oluştur</h3>
+          <p>Tüm klasörler ve dosyalar tek komutla otomatik oluşturulur.</p>
+          <div class="u-code"><span class="u-code-lbl">Terminal</span><code>python proje_olustur.py</code></div>
+        </div>
+      </li>
+      <li>
+        <div class="u-step-num">2</div>
+        <div class="u-step-body">
+          <h3>Sanal ortam oluştur (önerilir)</h3>
+          <div class="u-code"><span class="u-code-lbl">Terminal</span><code>python -m venv venv
+# Windows:  venv\Scripts\activate
+# macOS/Linux:  source venv/bin/activate</code></div>
+        </div>
+      </li>
+      <li>
+        <div class="u-step-num">3</div>
+        <div class="u-step-body">
+          <h3>Bağımlılıkları yükle</h3>
+          <div class="u-code"><span class="u-code-lbl">Terminal</span><code>pip install -r requirements.txt</code></div>
+        </div>
+      </li>
+      <li>
+        <div class="u-step-num">4</div>
+        <div class="u-step-body">
+          <h3>.env dosyasını yapılandır</h3>
+          <div class="u-code"><span class="u-code-lbl">.env</span><code>SECRET_KEY=sifre-buraya-en-az-32-karakter
+FLASK_ENV=development
+MAX_UPLOAD_MB=50</code></div>
+          <div class="u-warn">
+            <span class="u-tip-icon">⚠️</span>
+            <span><strong>.env dosyasını asla Git'e commit etme!</strong> .gitignore bunu zaten dışlar.</span>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="u-step-num">5</div>
+        <div class="u-step-body">
+          <h3>Uygulamayı başlat</h3>
+          <div class="u-code"><span class="u-code-lbl">Terminal</span><code>python app.py</code></div>
+          <p>Tarayıcında aç: <strong>http://localhost:5000</strong></p>
+        </div>
+      </li>
+    </ol>
+  </div>
+
+  {# ══ URL TARAMA ═════════════════════════════════════════════ #}
+  <div class="u-section" id="url-tarama">
+    <div class="u-label">Özellik 1</div>
+    <h2>URL'den E-posta &amp; URL Çıkarma</h2>
+    <p>Ana sayfadaki <strong>"URL'den Çek"</strong> sekmesini kullan.</p>
+    <ol class="u-steps">
+      <li>
+        <div class="u-step-num">1</div>
+        <div class="u-step-body">
+          <h3>URL gir</h3>
+          <div class="u-code"><code>https://www.ornek.com</code></div>
+        </div>
+      </li>
+      <li>
+        <div class="u-step-num">2</div>
+        <div class="u-step-body">
+          <h3>Seçenekleri ayarla</h3>
+          <table class="u-table">
+            <tr><th>Seçenek</th><th>Açıklama</th></tr>
+            <tr><td>☐ Derin tarama</td><td>Alt sayfalar da taranır (maks. 5 sayfa)</td></tr>
+            <tr><td>☐ HTML kaynağını kaydet</td><td>Sayfa kaynağı <code>uploads/</code> klasörüne kaydedilir</td></tr>
+          </table>
+        </div>
+      </li>
+      <li>
+        <div class="u-step-num">3</div>
+        <div class="u-step-body">
+          <h3>"Tarama Başlat" butonuna tıkla</h3>
+          <p>Sonuçlar e-posta sayısı ve URL sayısı olarak gösterilir.</p>
+        </div>
+      </li>
+    </ol>
+    <div class="u-tip"><span class="u-tip-icon">💡</span><span>Derin tarama birkaç dakika sürebilir. Sayfayı kapatma.</span></div>
+  </div>
+
+  {# ══ DOSYA YÜKLEME ══════════════════════════════════════════ #}
+  <div class="u-section" id="dosya-yukleme">
+    <div class="u-label">Özellik 2</div>
+    <h2>Dosyadan E-posta &amp; URL Çıkarma</h2>
+    <p>Ana sayfadaki <strong>"Dosya Yükle"</strong> sekmesini kullan.</p>
+    <div class="u-card u-card-blue">
+      <h3>Desteklenen formatlar &amp; sınırlar</h3>
+      <p style="margin-top:10px;">
+        <span class="u-badge u-badge-blue">TXT</span>&nbsp;
+        <span class="u-badge u-badge-blue">HTML</span>&nbsp;
+        <span class="u-badge u-badge-blue">HTM</span>&nbsp;
+        <span class="u-badge u-badge-blue">CSV</span>&nbsp;
+        <span class="u-badge u-badge-blue">JSON</span>
+      </p>
+      <p style="margin-top:10px; font-size:0.88rem; color:var(--muted);">Maksimum dosya boyutu: <strong>50 MB</strong> (.env'den ayarlanabilir)</p>
+    </div>
+    <ol class="u-steps">
+      <li>
+        <div class="u-step-num">1</div>
+        <div class="u-step-body">
+          <h3>Dosya seç veya sürükle-bırak</h3>
+          <p>Birden fazla dosya aynı anda yüklenebilir.</p>
+        </div>
+      </li>
+      <li>
+        <div class="u-step-num">2</div>
+        <div class="u-step-body">
+          <h3>"Dosyaları İşle" butonuna tıkla</h3>
+          <p>Tüm dosyalar sırayla işlenir; tekrarsız birleşik liste oluşturulur.</p>
+        </div>
+      </li>
+      <li>
+        <div class="u-step-num">3</div>
+        <div class="u-step-body">
+          <h3>Sonuçları incele ve indir</h3>
+          <p>E-postaları ve URL'leri ayrı ayrı ya da birlikte indirebilirsin.</p>
+        </div>
+      </li>
+    </ol>
+  </div>
+
+  {# ══ SAYFALI TARAMA ═════════════════════════════════════════ #}
+  <div class="u-section" id="sayfali-tarama">
+    <div class="u-label">Özellik 3</div>
+    <h2>Sayfalı Site Tarayıcı</h2>
+    <p>Üst menüden <strong>"Sayfalı Tarama"</strong> sayfasına git.</p>
+    <div class="u-card u-card-gold">
+      <h3>Desteklenen URL formatları</h3>
+      <div class="u-code" style="margin-top:12px;"><code># Klasik sayfalama:
+https://www.ostim.org.tr/firmalar?page=1
+
+# Ek parametre ile:
+https://site.com/liste?kategori=5&amp;page=1
+
+# Placeholder ile:
+https://site.com/sayfa-{page}.html</code></div>
+    </div>
+    <ol class="u-steps">
+      <li>
+        <div class="u-step-num">1</div>
+        <div class="u-step-body">
+          <h3>Base URL'yi gir</h3>
+          <p>İlk sayfa URL'sini yaz (<code>page=1</code> içermeli).</p>
+        </div>
+      </li>
+      <li>
+        <div class="u-step-num">2</div>
+        <div class="u-step-body">
+          <h3>Sayfa aralığı ve gecikme ayarla</h3>
+          <table class="u-table">
+            <tr><th>Alan</th><th>Varsayılan</th><th>Açıklama</th></tr>
+            <tr><td>Başlangıç sayfası</td><td>1</td><td>Taramanın başladığı sayfa</td></tr>
+            <tr><td>Bitiş sayfası</td><td>10</td><td>Taramanın bittiği sayfa (maks. 100)</td></tr>
+            <tr><td>Gecikme (sn)</td><td>1</td><td>Sayfalar arası bekleme (min. 0.5)</td></tr>
+          </table>
+        </div>
+      </li>
+      <li>
+        <div class="u-step-num">3</div>
+        <div class="u-step-body">
+          <h3>Taramayı başlat</h3>
+          <p>Tüm e-posta ve URL'ler birleştirilerek gösterilir.</p>
+        </div>
+      </li>
+    </ol>
+    <div class="u-tip"><span class="u-tip-icon">💡</span><span>Gecikmeyi en az <strong>1 saniye</strong> bırak; yoksa IP engellenebilirsin.</span></div>
+  </div>
+
+  {# ══ URL → EMAIL ════════════════════════════════════════════ #}
+  <div class="u-section" id="url-email">
+    <div class="u-label">Özellik 4</div>
+    <h2>URL → E-posta Dönüştürücü</h2>
+    <p>Üst menüden <strong>"URL'den Email"</strong> sayfasına git. URL listesi içeren dosyaları yükle; her URL için <code>info@domain.com</code> üretilir.</p>
+    <div class="u-card u-card-green">
+      <h3>Dönüşüm öncelik sırası</h3>
+      <table class="u-table" style="margin-top:12px;">
+        <tr><th>Öncelik</th><th>Prefix</th><th>Örnek Giriş</th><th>Sonuç</th></tr>
+        <tr><td><span class="u-badge u-badge-green">1</span></td><td>https://www.</td><td>https://www.ornek.com</td><td>info@ornek.com</td></tr>
+        <tr><td><span class="u-badge u-badge-blue">2</span></td><td>http://www.</td><td>http://www.ornek.com</td><td>info@ornek.com</td></tr>
+        <tr><td><span class="u-badge u-badge-blue">3</span></td><td>https://</td><td>https://ornek.com</td><td>info@ornek.com</td></tr>
+        <tr><td><span class="u-badge u-badge-gold">4</span></td><td>http://</td><td>http://ornek.com</td><td>info@ornek.com</td></tr>
+        <tr><td><span class="u-badge u-badge-red">5</span></td><td>www.</td><td>www.ornek.com</td><td>info@ornek.com</td></tr>
+      </table>
+    </div>
+    <div class="u-info"><span class="u-tip-icon">ℹ️</span><span>Birden fazla TXT/CSV dosyası aynı anda yüklenebilir; tüm URL'ler birleştirilip işlenir.</span></div>
+  </div>
+
+  {# ══ EMAIL → URL ════════════════════════════════════════════ #}
+  <div class="u-section" id="email-url">
+    <div class="u-label">Özellik 5</div>
+    <h2>E-posta → URL Dönüştürücü</h2>
+    <p>Üst menüden <strong>"Email'den URL"</strong> sayfasına git. E-posta listesini dosya olarak yükle veya metin kutusuna yapıştır.</p>
+    <div class="u-card u-card-blue">
+      <h3>Her e-posta için 3 URL üretilir</h3>
+      <div class="u-code" style="margin-top:12px;"><code>Giriş:  info@ornek.com
+
+Çıkış:
+  https://www.ornek.com   ← Birincil (en yaygın)
+  https://ornek.com       ← İkincil
+  http://www.ornek.com    ← Eski format</code></div>
+    </div>
+    <ol class="u-steps">
+      <li>
+        <div class="u-step-num">1</div>
+        <div class="u-step-body">
+          <h3>Kaynak seç: Dosya veya Metin</h3>
+          <p>Dosya sekmesinden TXT/CSV yükle <em>ya da</em> metin sekmesine e-postaları yapıştır.</p>
+        </div>
+      </li>
+      <li>
+        <div class="u-step-num">2</div>
+        <div class="u-step-body">
+          <h3>Dönüştür butonuna tıkla</h3>
+          <p>Tablo halinde e-posta → URL eşleşmelerini görürsün.</p>
+        </div>
+      </li>
+      <li>
+        <div class="u-step-num">3</div>
+        <div class="u-step-body">
+          <h3>İstediğin formatta indir</h3>
+          <p>TXT, CSV, Excel veya JSON olarak dışa aktarabilirsin.</p>
+        </div>
+      </li>
+    </ol>
+  </div>
+
+  {# ══ EXCEL BİRLEŞTİRME ══════════════════════════════════════ #}
+  <div class="u-section" id="excel">
+    <div class="u-label">Özellik 6</div>
+    <h2>Excel E-posta Birleştirici</h2>
+    <p>Üst menüden <strong>"Excel Birleştir"</strong> sayfasına git.</p>
+    <div class="u-card u-card-gold">
+      <h3>Desteklenen Excel formatları</h3>
+      <p style="margin-top:10px;">
+        <span class="u-badge u-badge-green">XLSX</span>&nbsp;
+        <span class="u-badge u-badge-green">XLS</span>&nbsp;
+        <span class="u-badge u-badge-green">CSV</span>
+      </p>
+    </div>
+    <ol class="u-steps">
+      <li>
+        <div class="u-step-num">1</div>
+        <div class="u-step-body">
+          <h3>Birden fazla dosya seç</h3>
+          <p>Sütun yapısı farklı olabilir; araç tüm sütunları otomatik tarar.</p>
+        </div>
+      </li>
+      <li>
+        <div class="u-step-num">2</div>
+        <div class="u-step-body">
+          <h3>Domain istatistiği (opsiyonel)</h3>
+          <p>"Domain bazlı istatistik göster" seçeneğini işaretle.</p>
+        </div>
+      </li>
+      <li>
+        <div class="u-step-num">3</div>
+        <div class="u-step-body">
+          <h3>Sonuçları indir</h3>
+          <p>Tekrarlananlar kaldırılmış, normalize edilmiş liste hazır.</p>
+        </div>
+      </li>
+    </ol>
+  </div>
+
+  {# ══ İNDİRME ════════════════════════════════════════════════ #}
+  <div class="u-section" id="indirme">
+    <div class="u-label">Dışa Aktarma</div>
+    <h2>İndirme Formatları</h2>
+    <table class="u-table">
+      <tr><th>Format</th><th>Uzantı</th><th>Uygun kullanım</th></tr>
+      <tr><td><span class="u-badge u-badge-blue">TXT</span></td><td>.txt</td><td>Satır satır liste, başka araçlara aktarım</td></tr>
+      <tr><td><span class="u-badge u-badge-green">CSV</span></td><td>.csv</td><td>Excel'de açma, UTF-8 BOM ile Türkçe destek</td></tr>
+      <tr><td><span class="u-badge u-badge-gold">Excel</span></td><td>.xlsx</td><td>Doğrudan Excel formatında indirme</td></tr>
+      <tr><td><span class="u-badge u-badge-red">JSON</span></td><td>.json</td><td>API entegrasyonu, programatik kullanım</td></tr>
+    </table>
+    <div class="u-info"><span class="u-tip-icon">ℹ️</span><span>Sonuç anahtarı (result_key) <strong>1 saat</strong> geçerlidir. Önemli sonuçları hemen indir.</span></div>
+  </div>
+
+  {# ══ GÜVENLİK ════════════════════════════════════════════════ #}
+  <div class="u-section" id="guvenlik">
+    <div class="u-label">Güvenlik</div>
+    <h2>Güvenlik Notları</h2>
+    <div class="u-card u-card-red" style="margin-bottom:14px;">
+      <h3>🔑 SECRET_KEY</h3>
+      <p style="margin-top:8px; font-size:0.9rem;">Her kurulumda <code>.env</code> dosyasındaki değeri mutlaka değiştir.</p>
+      <div class="u-code" style="margin-top:10px;"><span class="u-code-lbl">Python</span><code>python -c "import secrets; print(secrets.token_hex(32))"</code></div>
+    </div>
+    <div class="u-card u-card-green">
+      <h3>✅ Yerleşik güvenlik özellikleri</h3>
+      <ul style="margin-top:10px; padding-left:20px; font-size:0.9rem; color:#374151; line-height:2.1;">
+        <li>Yüklenen dosyalar işlem sonrası <strong>otomatik silinir</strong></li>
+        <li>Yalnızca izinli uzantılar kabul edilir (.exe, .php vb. reddedilir)</li>
+        <li>İndirme anahtarları UUID formatında doğrulanır (path traversal koruması)</li>
+        <li>Hata mesajları iç sistem detayını kullanıcıya göstermez</li>
+        <li>Sayfalı taramada maksimum 100 sayfa sınırı</li>
+        <li>Tüm hatalar <code>app.log</code> dosyasına kaydedilir</li>
+      </ul>
+    </div>
+  </div>
+
+  {# ══ SSS ═════════════════════════════════════════════════════ #}
+  <div class="u-section" id="sss">
+    <div class="u-label">Sık Sorulan Sorular</div>
+    <h2>SSS</h2>
+
+    <details class="u-faq">
+      <summary>Tarama ne kadar sürer?</summary>
+      <div class="u-faq-body">Tek sayfa taraması 2-10 saniye arasında tamamlanır. Derin tarama (5 alt sayfa) 20-60 saniye sürebilir. Sayfalı taramada gecikme ayarına göre değişir.</div>
+    </details>
+
+    <details class="u-faq">
+      <summary>Yüklediğim dosyalar saklanıyor mu?</summary>
+      <div class="u-faq-body">Hayır. Yüklenen dosyalar işlendikten hemen sonra <code>safe_delete_upload()</code> ile diskten silinir. Sunucuda dosya birikmez.</div>
+    </details>
+
+    <details class="u-faq">
+      <summary>Hangi siteler taranamaz?</summary>
+      <div class="u-faq-body">JavaScript ile dinamik yüklenen içerikler (SPA'lar), Cloudflare bot koruması aktif siteler ve giriş gerektiren sayfalar taranamaz. Bu araç statik HTML içeriği tarar.</div>
+    </details>
+
+    <details class="u-faq">
+      <summary>CSV dosyasını Excel'de açınca Türkçe karakterler bozuluyor.</summary>
+      <div class="u-faq-body">CSV dosyaları UTF-8 BOM (<code>utf-8-sig</code>) ile oluşturulur. Excel'de <em>Veri → Dış Veri Al → Metinden</em> yolunu kullan ve kodlamayı <strong>UTF-8</strong> seç. Daha kolay yol: Excel formatında (.xlsx) indir.</div>
+    </details>
+
+    <details class="u-faq">
+      <summary>Sonuçlarım kayboldu, tekrar indiremiyorum.</summary>
+      <div class="u-faq-body">Geçici sonuç dosyaları <strong>1 saat</strong> sonra otomatik silinir. Önemli sonuçları hemen indirmenizi öneririz; gerekirse işlemi tekrarlayın.</div>
+    </details>
+
+    <details class="u-faq">
+      <summary>Sayfalı tarama sırasında site beni engelliyor.</summary>
+      <div class="u-faq-body">Gecikme değerini 2-3 saniyeye çıkar. Araç tarayıcı gibi davranan User-Agent kullanır; bu da engel ihtimalini azaltır.</div>
+    </details>
+
+    <details class="u-faq">
+      <summary>Üretim ortamında (production) nasıl kullanırım?</summary>
+      <div class="u-faq-body">
+        <p><code>.env</code> dosyasında <code>FLASK_ENV=production</code> yap, ardından Gunicorn + Nginx ile çalıştır:</p>
+        <div class="u-code"><code>pip install gunicorn
+gunicorn -w 4 -b 0.0.0.0:8000 app:app</code></div>
+        <p style="margin-top:8px;">Flask-Limiter ile rate limiting ve HTTPS kullanmayı da unutma.</p>
+      </div>
+    </details>
+
+  </div>{# /sss #}
+
+</div>{# /u-main #}
+
+{% endblock %}
